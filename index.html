@@ -2,12 +2,112 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>My first three.js app</title>
+		<title>Interactive Solar System</title>
 		<style>
-			body { margin: 0; }
+			body { 
+				margin: 0; 
+				overflow: hidden;
+				font-family: Arial, sans-serif;
+			}
+			#info {
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				color: white;
+				font-size: 18px;
+				font-weight: bold;
+				text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+				z-index: 100;
+				pointer-events: none;
+			}
+			#planetInfo {
+				position: absolute;
+				bottom: 20px;
+				left: 20px;
+				background-color: rgba(0,0,0,0.7);
+				color: white;
+				padding: 15px;
+				border-radius: 10px;
+				max-width: 300px;
+				display: none;
+				z-index: 100;
+			}
+			#planetInfo h2 {
+				margin-top: 0;
+				margin-bottom: 10px;
+				color: #ffcc00;
+			}
+			#planetInfo p {
+				margin: 5px 0;
+			}
+			.planet-details {
+				margin-top: 10px;
+			}
 		</style>
 	</head>
 	<body>
+		<div id="info">Interactive Solar System - Click on a planet to learn more</div>
+<div id="controls-info" style="position: absolute; bottom: 10px; right: 10px; background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; color: white; font-size: 12px;">
+  Mouse: Rotate View | Scroll: Zoom | Click Planet: Focus & Show Info | Click Space: Reset View
+</div>
+		<div id="planetInfo">
+			<h2 id="planetName"></h2>
+			<div class="planet-details">
+				<p>Mass: <span id="planetMass"></span></p>
+				<p>Radius: <span id="planetRadius"></span> km</p>
+				<p>Distance from Sun: <span id="planetDistance"></span> million km</p>
+			</div>
+			<p id="planetDesc"></p>
+			<div id="planetLayers"></div>
+		</div>
 		<script type="module" src="/main.js"></script>
+		<script>
+			// Function to update planet info panel (now using 3D panel instead)
+			window.showPlanetInfo = function(planet) {
+				const infoPanel = document.getElementById('planetInfo');
+				if (!planet) {
+					infoPanel.style.display = 'none';
+					return;
+				}
+				
+				document.getElementById('planetName').textContent = planet.name;
+				document.getElementById('planetMass').textContent = planet.mass;
+				document.getElementById('planetRadius').textContent = (planet.radius * 6371).toLocaleString(); // Scale relative to Earth
+				document.getElementById('planetDistance').textContent = (planet.distance * 7.5).toLocaleString(); // Approximate scaling
+				document.getElementById('planetDesc').textContent = planet.info;
+				
+				// Show layer information
+				const layersDiv = document.getElementById('planetLayers');
+				layersDiv.innerHTML = '<p><strong>Internal Layers:</strong></p>';
+				
+				planet.layers.forEach(layer => {
+					const layerElement = document.createElement('p');
+					layerElement.textContent = `${layer.name}: ${Math.round(layer.radius * 100)}% of radius`;
+					layersDiv.appendChild(layerElement);
+				});
+				
+				infoPanel.style.display = 'none'; // Hide the HTML panel as we're using 3D panel instead
+			};
+			
+			window.hidePlanetInfo = function() {
+				document.getElementById('planetInfo').style.display = 'none';
+			};
+			
+			// Add keyboard controls
+			window.addEventListener('keydown', function(event) {
+				// Escape key to reset view
+				if (event.key === 'Escape') {
+					const clickEvent = new MouseEvent('click', {
+						view: window,
+						bubbles: true,
+						cancelable: true,
+						clientX: 0,
+						clientY: 0
+					});
+					document.dispatchEvent(clickEvent);
+				}
+			});
+		</script>
 	</body>
 </html>
